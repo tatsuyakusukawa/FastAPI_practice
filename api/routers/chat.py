@@ -2,8 +2,8 @@ from fastapi import APIRouter
 from pydantic import BaseModel
 from fastapi import HTTPException
 from dotenv import load_dotenv
+
 import os
-import openai
 
 
 router = APIRouter()
@@ -49,6 +49,7 @@ async def post_openai(chat_message: ChatMessage):
     # 受け取ったメッセージをOpenAIに送信して、返答を返す
 
     try:
+        import openai
         response = openai.Completion.create(
             engine="davinci",
             prompt=chat_message.message,
