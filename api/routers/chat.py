@@ -1,22 +1,21 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
-from fastapi import HTTPException
 from dotenv import load_dotenv
-
 import os
-
+import openai
 
 router = APIRouter()
 load_dotenv()
 
 openai_api_key = os.getenv("OPENAI_API_KEY")
+openai.api_key = openai_api_key
 
 class ChatMessage(BaseModel):
     message: str
 
 @router.get("/chat")
 async def hello():
-    return {"messege":"hello"}
+    return {"message": "hello"}
 
 @router.post("/chat")
 async def post_chat(chat_message: ChatMessage):
@@ -40,26 +39,26 @@ async def post_chat(chat_message: ChatMessage):
     return {"response": response_message}
 
 @router.post("/openai")
-# 受け取ったメッセージをOpenAIに送信して、返答を返す
-async def post_openai(chat_message: ChatMessage):    
-    response_message = f"Received message: {chat_message.message}"
-    
+async def post_openai(chat_message: ChatMessage):
+
+    client = openai.Client()
     # デバッグログの追加
     print(f"Received message: {chat_message.message}")
-    # 受け取ったメッセージをOpenAIに送信して、返答を返す
 
     try:
-        import openai
-        response = openai.Completion.create(
-            engine="davinci",
-            prompt=chat_message.message,
-            max_tokens=100,
-            api_key=openai_api_key
-        )
+        # OpenAI APIリクエスト
+        response = client.chat.completions.create(
+            model="gpt-3.5-turbo",
+            messages=[
+                {"role": "system", "content": "親しみやすいAIです。何か質問があればどうぞ。"},
+                {"role": "user", "content": chat_message.message}
+            ]
+            )
+        print("OpenAI API request successful")
 
-        response_message = response.choices[0].text
     except Exception as e:
-        print(f"Error with OpenAI: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
-    
-    return {"response": response_message}
+        print(f"Error with OpenAI API request: {str(e)}")
+        raise HTTPException(status_code=500, detail
+        =str(e))
+    response_text = response.choices[0].message
+    return {"response": response_text}
