@@ -5,3 +5,5 @@ hshs
 hshs
 hshs
 これはテスト
+string
+test
